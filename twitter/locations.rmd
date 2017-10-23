@@ -89,7 +89,7 @@ tweeps_location <- function(twitter_username, following=FALSE, followers=FALSE) 
 }
 ```
 
-```{r data_obtention}
+```{r data_obtention} #by example, we use Force11 twitter account
 FORCE11SCIdf_followers <- tweeps_location("FORCE11SCI", followers=TRUE)
 ```
 
