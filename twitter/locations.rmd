@@ -1,0 +1,122 @@
+---
+title: "Twitter locations"
+author: "Luis Alfonso Orellana"
+date: "22 de octubre de 2017"
+output: html_document
+---
+## Setup
+
+This installs the latest version of the rtweet package, which contains some bug fixes not currently on the CRAN distribution
+
+```{r rtweet_package}
+if (!"devtools" %in% installed.packages()) {
+  install.packages("devtools")
+}
+devtools::install_github("mkearney/rtweet")
+```
+
+rtweet loading and other packages that need to be loaded:
+
+```{r libraries}
+
+library(rtweet) #Used for twitter communication
+if (!"magrittr" %in% installed.packages()) {
+  install.packages("magrittr")
+}
+library(magrittr) # used for the pipe operator %>%
+library(ggplot2)  # used for graphics mapping, adding the points to the map
+library(ggmap)    # used for ggmap
+library(maps)     # used to plot a world map
+library(rlist)    # used for one of the cleaning functions, list.clean()
+```
+
+## API Auth
+
+Replace accordingly with your api data
+
+```{r api_setup}
+key <- "your_tweeter_app_key"
+secret <- "your_tweeter_app_secret"
+token <- rtweet::create_token(app="your_app_name",consumer_key=key, consumer_secret=secret)
+geocode_API_key <- "your_google_geocode_api_key"
+```
+
+## Location function
+
+This function returns a data frame with 'lon' and 'lat' columns of the points identified as having a valid point location after passing through the Google geocode API.
+    
+It will throw an error message if both of the additional arguments, following and followers, aren't set or if both = TRUE
+
+```{r location_function}
+tweeps_location <- function(twitter_username, following=FALSE, followers=FALSE) {
+  # First check if at least one of the arguments needed (following/followers) was set to TRUE
+  if (!following && !followers) {
+    print("You must specify following OR followers = TRUE")
+  } else if (following && followers) {
+    print("You must specify just one, following OR followers = TRUE")
+  } else {  
+    if (followers) {
+      tweeps_id <- get_followers(twitter_username)
+      message("Obtaining data for ", length(tweeps_id$user_id), " followers of ", twitter_username)
+    } else if (following) {
+      tweeps_id <- get_friends(twitter_username)
+      message("Obtaining data for ", length(tweeps_id$user_id), " followed by ", twitter_username)
+    }
+    
+    tweeps <- lookup_users(tweeps_id$user_id)
+    
+    following_withLocation <- subset(tweeps, location != "")
+    message("There are ", length(following_withLocation$location), " accounts with location information")
+    
+    locationData <- lapply(following_withLocation$location, function(x) 
+    tryCatch(lookup_coords(x, key=geocode_API_key, box = FALSE),
+           warning = function(w) {message("invalid location: ", x); NULL},
+           error = function(e) {message("invalid location: ", x); NULL}
+    ))
+    
+    locationData <- list.clean(locationData, is.null, recursive=FALSE)
+    message("The Google Geocode API found ", length(locationData), " valid locations")
+    
+    stack <- locationData %>%
+      unlist() %>%
+      stack()
+    
+    lon <- as.numeric(stack[stack$ind=="point.lng",1])
+    lat <- as.numeric(stack[stack$ind=="point.lat",1])
+    df <- as.data.frame(cbind(lon, lat))
+    return(df)
+  }
+}
+```
+
+```{r data_obtention}
+FORCE11SCIdf_followers <- tweeps_location("FORCE11SCI", followers=TRUE)
+```
+
+## Mapping
+
+```{r map, echo=FALSE}
+mp <- NULL
+mapWorld <- borders("world", colour="gray80", fill="gray60") # create a layer of borders
+mp <- ggplot() +   mapWorld
+mp <- mp + geom_point(data=FORCE11SCIdf_followers, aes(x = lon, y = lat, fill="red", alpha=0.5), size=3, shape=21) +
+  ggtitle("@FORCE11SCI followers locations")
+mp
+```
+
+## Versions
+
+Versions used:
+
+R version 3.4.1 (2017-06-30)
+Platform: x86_64-w64-mingw32/x64 (64-bit)
+Running under: Windows >= 8 x64 (build 9200)
+
+rtweet: 0.5.14
+magrittr: 1.5
+ggplot2: 2.2.1
+ggmap: 2.6.1
+maps: 3.2.0
+rlist: 0.4.6.1
+
+##### Code under [Creative Commons Licence Attribution-NonCommercial 4.0 International (CC BY-NC 4.0) ](https://creativecommons.org/licenses/by-nc/4.0/)
