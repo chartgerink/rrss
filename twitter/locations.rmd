@@ -1,12 +1,12 @@
 ---
 title: "Twitter locations"
 author: "Luis Alfonso Orellana"
-date: "22 de octubre de 2017"
+date: "October 2017"
 output: html_document
 ---
 ## Setup
 
-This installs the latest version of the rtweet package, which contains some bug fixes not currently on the CRAN distribution
+This installs the latest version of the rtweet package, which contains some changes not currently on the CRAN distribution
 
 ```{r rtweet_package}
 if (!"devtools" %in% installed.packages()) {
@@ -18,11 +18,22 @@ devtools::install_github("mkearney/rtweet")
 rtweet loading and other packages that need to be loaded:
 
 ```{r libraries}
-
-library(rtweet) #Used for twitter communication
 if (!"magrittr" %in% installed.packages()) {
   install.packages("magrittr")
 }
+if (!"ggplot2" %in% installed.packages()) {
+  install.packages("ggplot2")
+}
+if (!"ggmap" %in% installed.packages()) {
+  install.packages("ggmap")
+}
+if (!"maps" %in% installed.packages()) {
+  install.packages("maps")
+}
+if (!"rlist" %in% installed.packages()) {
+  install.packages("rlist")
+}
+library(rtweet)   # used for twitter communication
 library(magrittr) # used for the pipe operator %>%
 library(ggplot2)  # used for graphics mapping, adding the points to the map
 library(ggmap)    # used for ggmap
@@ -35,17 +46,18 @@ library(rlist)    # used for one of the cleaning functions, list.clean()
 Replace accordingly with your api data
 
 ```{r api_setup}
-key <- "your_tweeter_app_key"
-secret <- "your_tweeter_app_secret"
-token <- rtweet::create_token(app="your_app_name",consumer_key=key, consumer_secret=secret)
-geocode_API_key <- "your_google_geocode_api_key"
+key <- "your_twitter_app_key"
+secret <- "your_twitter_app_secret"
+token <- rtweet::create_token(app="your_twitter_app_name",consumer_key=key, consumer_secret=secret)
+geocode_API_key <- "your_Google_geocode_api_key"
+rm(key, secret)
 ```
 
 ## Location function
 
 This function returns a data frame with 'lon' and 'lat' columns of the points identified as having a valid point location after passing through the Google geocode API.
     
-It will throw an error message if both of the additional arguments, following and followers, aren't set or if both = TRUE
+The function will throw an error message if both of the additional arguments, following and followers, aren't set or if both = TRUE
 
 ```{r location_function}
 tweeps_location <- function(twitter_username, following=FALSE, followers=FALSE) {
@@ -89,8 +101,8 @@ tweeps_location <- function(twitter_username, following=FALSE, followers=FALSE) 
 }
 ```
 
-```{r data_obtention} #by example, we use Force11 twitter account
-FORCE11SCIdf_followers <- tweeps_location("FORCE11SCI", followers=TRUE)
+```{r data_obtention} 
+FORCE11SCIdf_followers <- tweeps_location("FORCE11SCI", followers=TRUE) #by example, we use Force11 twitter account
 ```
 
 ## Mapping
@@ -106,17 +118,19 @@ mp
 
 ## Versions
 
-Versions used:
+R and platform information:
 
-R version 3.4.1 (2017-06-30)
-Platform: x86_64-w64-mingw32/x64 (64-bit)
-Running under: Windows >= 8 x64 (build 9200)
+- R version 3.4.1 (2017-06-30)
+- Platform: x86_64-w64-mingw32/x64 (64-bit)
+- Running under: Windows >= 8 x64 (build 9200)
 
-rtweet: 0.5.14
-magrittr: 1.5
-ggplot2: 2.2.1
-ggmap: 2.6.1
-maps: 3.2.0
-rlist: 0.4.6.1
+Packages:
+
+- rtweet: 0.5.14
+- magrittr: 1.5
+- ggplot2: 2.2.1
+- ggmap: 2.6.1
+- maps: 3.2.0
+- rlist: 0.4.6.1
 
 ##### Code under [Creative Commons Licence Attribution-NonCommercial 4.0 International (CC BY-NC 4.0) ](https://creativecommons.org/licenses/by-nc/4.0/)
