@@ -1,6 +1,10 @@
-setup <- function (twitter_key, twitter_secret, geo_pat) {
-  key <- "your_twitter_app_key"
-  secret <- "your_twitter_app_secret"
-  token <- rtweet::create_token(app="your_twitter_app_name",consumer_key=key, consumer_secret=secret)
-  geocode_API_key <- "your_Google_geocode_api_key"
+# https://apps.twitter.com/
+
+setup_map <- function (twitter_key, twitter_secret, geo_pat) {
+  Sys.setenv(twitter_key = twitter_key,
+  	twitter_secret = twitter_secret,
+  	geo_pat = geo_pat)
+  token <- rtweet::create_token(app="fiajfkdjflskdjflksadj", consumer_key=twitter_key, consumer_secret=twitter_secret)
+  
+  return(token)
 }
